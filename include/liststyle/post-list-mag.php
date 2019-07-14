@@ -33,11 +33,13 @@
 	<input type="radio" name="switch" id="tab-4">
 	<input type="radio" name="switch" id="tab-5">
 	
+	<?php
+		$featured_categorys = getFeaturedCategorys();
+	?>
 	<ul class="tabBtn-mag">
-		<li><label for="tab-1">札幌地区別</label></li>
-        <li><label for="tab-2">イベント別</label></li>
-        <li><label for="tab-3">観光スポット別</label></li>
-        <li><label for="tab-4">ミシュラン掲載店</label></li>
+		<?php foreach($featured_categorys as $index => $featured_category) : ?>
+			<li><label for="tab-<?= $index+1 ?>"><?= $featured_category->name ?></label></li>
+		<?php endforeach; ?>
 	</ul>
 	<div class="toppost-list-box-inner">
 	
