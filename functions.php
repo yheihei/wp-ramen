@@ -27,6 +27,19 @@ function getFeaturedCategorys(){
 }
 
 /**
+ * トップページのカテゴリー一覧に表示するカテゴリーを取得する
+ */
+function getFeaturedCategorysChilds($term_id) {
+	// $child_category_ids = get_term_children($term_id, 'category');
+	$featured_child_categorys = get_terms( 'category', array(
+		'parent' => $term_id,
+		'hide_empty' => false,
+		'orderby' => 'term_order',
+	));
+	return $featured_child_categorys;
+}
+
+/**
  * トップに表示するカテゴリーの設定
  */
 add_action('admin_menu', 'top_category_menu');
@@ -69,4 +82,26 @@ function jin_child_settings_page() {
   </div>
 <?php
 }
+
+// カテゴリーIDから カスタムカテゴリーのアイキャッチ画像取得
+function cps_category_eyecatch_by_term_id($term_id){
+  $cat_class = get_category($term_id);
+  $cat_option = get_option($term_id);
+
+  if( isset($cat_option['cps_image_cat']) && $cat_option['cps_image_cat'] !== '' ){
+    $category_eyecatch = $cat_option['cps_image_cat'];
+  }
+  echo '<img src="' . esc_html($category_eyecatch) . '" >';
+}
+
+function cps_has_post_thumbnail($term_id) {
+	$cat_class = get_category($term_id);
+  $cat_option = get_option($term_id);
+
+  if( isset($cat_option['cps_image_cat']) && $cat_option['cps_image_cat'] !== '' ){
+    return true;
+	}
+	return false;
+}
+
 ?>
