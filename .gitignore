@@ -1,1 +1,5 @@
 .DS_Store
+/.phpcs.xml.dist
+/.travis.yml
+/phpunit.xml.dist
+/bin/install-wp-tests.sh
