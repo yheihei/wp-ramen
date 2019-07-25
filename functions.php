@@ -104,4 +104,17 @@ function cps_has_post_thumbnail($term_id) {
 	return false;
 }
 
+function get_recommended_posts() {
+	$tags = get_tags();
+	$recommended_tag_id = 0;
+	foreach( $tags as $tag ) {
+		if( $tag->name === 'おすすめ' ) {
+			$recommended_tag_id = $tag->term_id;
+			break;
+		}
+		continue;
+	}
+	return new WP_Query( "tag_id={$recommended_tag_id}" );
+}
+
 ?>
