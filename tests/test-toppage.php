@@ -15,9 +15,6 @@ class トップページに指定のカテゴリー一覧を表示する extends
 		$category_id_child = wp_create_category( '東区', $category_id );
 		$category_id2 = wp_create_category( 'イベント別' );
 		update_option('jin_yhei_top_categories', $category_id . "," . $category_id2);
-
-		$post_id = $this->factory->post->create( array( 'post_title' => 'おすすめタグがついた記事' ) );
-		wp_set_post_tags( $post_id, 'recommend', true );
 	}
 
 	/**
