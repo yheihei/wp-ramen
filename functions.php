@@ -7,7 +7,7 @@ function theme_enqueue_styles() {
 
 
 /**
- * トップページに表示するカテゴリーを取得する
+ * トップページに表示する親カテゴリーを取得する
  */
 function getFeaturedCategorys(){
 	$category_ids = explode(",", get_option('jin_yhei_top_categories'));
@@ -28,6 +28,8 @@ function getFeaturedCategorys(){
 
 /**
  * トップページのカテゴリー一覧に表示するカテゴリーを取得する
+ * @param $term_id
+ * @return カテゴリー
  */
 function getFeaturedCategorysChilds($term_id) {
 	// $child_category_ids = get_term_children($term_id, 'category');
@@ -40,20 +42,21 @@ function getFeaturedCategorysChilds($term_id) {
 }
 
 /**
- * トップに表示するカテゴリーの設定
+ * トップに表示するカテゴリーやタグの設定
  */
 add_action('admin_menu', 'top_category_menu');
 function top_category_menu() {
-	add_menu_page('子カテゴリーカスタマイズ', '子カテゴリーカスタマイズ', 'administrator', __FILE__, 'jin_child_settings_page','',61);
+	add_menu_page('子テーマカスタマイズ', '子テーマカスタマイズ', 'administrator', __FILE__, 'jin_child_settings_page','',61);
 	add_action( 'admin_init', 'register_top_category_settings' );
 }
 function register_top_category_settings() {
 	register_setting( 'top-category-settings-group', 'jin_yhei_top_categories' );
+	register_setting( 'top-category-settings-group', 'jin_yhei_top_tag_names' );
 }
 function jin_child_settings_page() {
 ?>
   <div class="wrap">
-    <h2>トップに表示するカテゴリー</h2>
+    <h2>トップに表示するカテゴリーやタグ</h2>
     <form method="post" action="options.php">
       <?php 
         settings_fields( 'top-category-settings-group' );
@@ -75,6 +78,20 @@ function jin_child_settings_page() {
 								>
 							</td>
           </tr>
+					<tr>
+            <th scope="row">
+              <label for="jin_yhei_top_tag_names">スライドショーに表示したいタグ名</label>
+            </th>
+              <td>
+								<input type="text" 
+									id="jin_yhei_top_tag_names" 
+									class="regular-text" 
+									name="jin_yhei_top_tag_names" 
+									value="<?php echo get_option('jin_yhei_top_tag_names'); ?>"
+									placeholder="おすすめ,まとめ,特集 (タグ名をカンマ区切りで入力)"
+								>
+							</td>
+          </tr>
         </tbody>
       </table>
       <?php submit_button(); ?>
@@ -83,7 +100,10 @@ function jin_child_settings_page() {
 <?php
 }
 
-// カテゴリーIDから カスタムカテゴリーのアイキャッチ画像取得
+/**
+ * カテゴリーIDから カスタムカテゴリーのアイキャッチ画像取得
+ * @param int $term_id
+ */
 function cps_category_eyecatch_by_term_id($term_id){
   $cat_class = get_category($term_id);
   $cat_option = get_option($term_id);
@@ -94,6 +114,10 @@ function cps_category_eyecatch_by_term_id($term_id){
   echo '<img src="' . esc_html($category_eyecatch) . '" >';
 }
 
+/**
+ * カテゴリー記事のサムネイルが設定されているか
+ * @return bool
+ */
 function cps_has_post_thumbnail($term_id) {
 	$cat_class = get_category($term_id);
   $cat_option = get_option($term_id);
@@ -104,17 +128,42 @@ function cps_has_post_thumbnail($term_id) {
 	return false;
 }
 
+/**
+ * トップのスライドショーに表示するタグの記事を取得する
+ * @return WP_Query
+ */
 function get_recommended_posts() {
 	$tags = get_tags();
-	$recommended_tag_id = 0;
+	$recommended_tag_ids = [];
+	$registered_tag_names = get_registered_tag_names();
+	if( empty($registered_tag_names )) {
+		// 未設定の場合はありえないtag id を指定して0記事にする
+		return new WP_Query( ['tag_id' => -1] );
+	}
 	foreach( $tags as $tag ) {
-		if( $tag->name === 'おすすめ' ) {
-			$recommended_tag_id = $tag->term_id;
-			break;
+		// トップに表示するタグのIDを取得する
+		if( in_array($tag->name, $registered_tag_names) ) {
+			$recommended_tag_ids[] = $tag->term_id;
 		}
 		continue;
 	}
-	return new WP_Query( "tag_id={$recommended_tag_id}" );
+	// トップに表示するタグIDで記事を取得する
+	return new WP_Query( ['tag__in' => $recommended_tag_ids] );
+}
+
+/**
+ * スライドショーに表示するタグ名を取得する
+ * @return array
+ */
+function get_registered_tag_names() {
+	$registered_tag_names = get_option('jin_yhei_top_tag_names');
+	if( !$registered_tag_names ) {
+		return [];
+	}
+	// 空白除去
+	$registered_tag_names  = preg_replace("/( |　)/", "", $registered_tag_names );
+	$registered_tag_names = explode(",", $registered_tag_names);
+	return $registered_tag_names;
 }
 
 ?>
