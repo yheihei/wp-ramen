@@ -37,7 +37,9 @@
 		$featured_categorys = getFeaturedCategorys();
 	?>
 	<ul class="tabBtn-mag">
-	<?php // カテゴリー一覧表示が未設定の場合通常表示
+	<?php 
+		$global_tab_index_count = 0;
+		// カテゴリー一覧表示が未設定の場合通常表示
 		if( empty($featured_categorys) ) : 
 		?>
 		<li><label for="tab-1">最新記事</label></li>
@@ -53,9 +55,17 @@
 		<?php else:
 			// トップページに指定のカテゴリー一覧を表示する 場合
 			?>
-		<?php foreach($featured_categorys as $index => $featured_category) : ?>
+		<?php foreach($featured_categorys as $index => $featured_category) :
+			$global_tab_index_count = $index+1;
+			?>
 			<li><label for="tab-<?= $index+1 ?>"><?= $featured_category->name ?></label></li>
 		<?php endforeach; ?>
+		<?php // メインブログにラーメン、カレーブログの新着を表示する
+			$other_blog_titles = get_target_rss_titles();
+			foreach($other_blog_titles as $index => $other_blog_title) :
+		?>
+			<li><label for="tab-<?= $global_tab_index_count+$index+1 ?>"><?= $other_blog_title ?></label></li>
+			<?php endforeach; ?>
 	<?php endif; ?>
 	</ul>
 	<div class="toppost-list-box-inner">
@@ -173,6 +183,118 @@
 								<div class="post-list-meta vcard">
 
 									<h2 class="post-list-title entry-title" itemprop="headline"><?php echo $featured_child_category->name; ?></h2>
+
+									<span class="writer fn" itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name"><?php the_author(); ?></span></span>
+
+									<div class="post-list-publisher" itemprop="publisher" itemscope itemtype="https://schema.org/Organization">
+										<span itemprop="logo" itemscope itemtype="https://schema.org/ImageObject">
+											<span itemprop="url"><?php echo get_topnavi_logo_image_url(); ?></span>
+										</span>
+										<span itemprop="name"><?php bloginfo('name'); ?></span>
+									</div>
+								</div>
+							</div>
+						</a>
+					</article>
+					<?php $infeed_ad_count++;?>
+					<?php endforeach; ?>
+		</div>
+		<?php endforeach; ?>
+
+		<?php 
+		// メインブログにラーメン、カレーブログの新着を表示する
+		$rss_urls = get_target_rss_urls();
+		foreach($rss_urls as $rss_url) : ?>
+			<div class="post-list-mag autoheight">
+					<?php
+						$ad_infeed_pc_num = get_option('ad_infeed_pc_num');
+						$ad_infeed_sp_num = get_option('ad_infeed_sp_num');
+						$infeed_ad_pc = explode(",", $ad_infeed_pc_num);
+						$infeed_ad_sp = explode(",", $ad_infeed_sp_num);
+						$infeed_ad_count = 1;
+						$infeed_ad_sp_num = 0;
+						$infeed_ad_num = 0;
+					?>
+					<?php 
+					$rss_items = get_another_rss($rss_url);
+					foreach($rss_items as $rss_item) : 
+						$rss_item_img_url = get_eyecatch_url_from_rss($rss_item);
+					?>
+
+					<?php if( ! is_mobile() && isset($infeed_ad_pc[$infeed_ad_num]) && $infeed_ad_pc[$infeed_ad_num] == $infeed_ad_count ): ?>
+
+						<?php if( ! get_option('ad_infeed_magazine') == null ) : ?>
+							<div class="post-list-item pconly">
+								<div class="post-list-inner-infeed">
+									<?php echo get_option('ad_infeed_magazine'); ?>
+								</div>
+							</div>
+
+						<?php endif; ?>
+
+						<?php $infeed_ad_num++; $infeed_ad_count++;  ?>
+
+						<?php if( isset($infeed_ad_pc[$infeed_ad_num]) && $infeed_ad_pc[$infeed_ad_num] == $infeed_ad_count ): ?>
+
+							<?php if( ! get_option('ad_infeed_magazine') == null ) : ?>
+								<div class="post-list-item pconly">
+									<div class="post-list-inner-infeed">
+										<?php echo get_option('ad_infeed_magazine'); ?>
+									</div>
+								</div>
+							<?php endif; ?>
+							<?php $infeed_ad_num++; $infeed_ad_count++;?>
+						<?php endif; ?>
+
+					<?php endif; ?>
+					
+					<article class="post-list-item" itemscope itemtype="https://schema.org/BlogPosting">
+						<a class="post-list-link" rel="bookmark" href="<?php echo $rss_item->get_permalink(); ?>" itemprop='mainEntityOfPage'>
+							<div class="post-list-inner">
+								<div class="post-list-thumb" itemprop="image" itemscope itemtype="https://schema.org/ImageObject">
+									<?php if ( ! is_mobile() ): ?>
+										<?php if ( $rss_item_img_url ): ?>
+											<img src="<?php echo $rss_item_img_url ?>" >
+											<meta itemprop="url" content="<?php echo $rss_item_img_url ?>">
+											<meta itemprop="width" content="640">
+											<meta itemprop="height" content="360">
+										<?php else: ?>
+											<img src="<?php echo get_jin_noimage_url(); ?>" width="480" height="270" alt="no image" />
+											<meta itemprop="url" content="<?php bloginfo('template_url'); ?>/img/noimg320.png">
+											<meta itemprop="width" content="480">
+											<meta itemprop="height" content="270">
+										<?php endif; ?>
+									<?php else: ?>
+										<?php if( is_post_list_style() == "magazinestyle-sp1col" ): ?>
+											<?php if ( $rss_item_img_url ): ?>
+												<img src="<?php echo $rss_item_img_url ?>" >
+												<meta itemprop="url" content="<?php echo $rss_item_img_url ?>">
+												<meta itemprop="width" content="640">
+												<meta itemprop="height" content="360">
+											<?php else: ?>
+												<img src="<?php echo get_jin_noimage_url(); ?>" width="480" height="270" alt="no image" />
+												<meta itemprop="url" content="<?php bloginfo('template_url'); ?>/img/noimg320.png">
+												<meta itemprop="width" content="480">
+												<meta itemprop="height" content="270">
+											<?php endif; ?>
+										<?php else: ?>
+											<?php if ( $rss_item_img_url ): ?>
+												<img src="<?php echo $rss_item_img_url ?>" >
+												<meta itemprop="url" content="<?php echo $rss_item_img_url ?>">
+												<meta itemprop="width" content="320">
+												<meta itemprop="height" content="180">
+											<?php else: ?>
+												<img src="<?php echo get_jin_noimage_url(); ?>" width="480" height="270" alt="no image" />
+												<meta itemprop="url" content="<?php bloginfo('template_url'); ?>/img/noimg320.png">
+												<meta itemprop="width" content="320">
+												<meta itemprop="height" content="180">
+											<?php endif; ?>
+										<?php endif; ?>
+									<?php endif; ?>
+								</div>
+								<div class="post-list-meta vcard">
+
+									<h2 class="post-list-title entry-title" itemprop="headline"><?php echo $rss_item->get_title(); ?></h2>
 
 									<span class="writer fn" itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name"><?php the_author(); ?></span></span>
 
