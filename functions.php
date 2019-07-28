@@ -47,16 +47,20 @@ function getFeaturedCategorysChilds($term_id) {
 add_action('admin_menu', 'top_category_menu');
 function top_category_menu() {
 	add_menu_page('子テーマカスタマイズ', '子テーマカスタマイズ', 'administrator', __FILE__, 'jin_child_settings_page','',61);
-	add_action( 'admin_init', 'register_top_category_settings' );
+	add_action( 'admin_init', 'register_jin_child_settings' );
 }
-function register_top_category_settings() {
+function register_jin_child_settings() {
+	// トップページ設定
 	register_setting( 'top-category-settings-group', 'jin_yhei_top_categories' );
 	register_setting( 'top-category-settings-group', 'jin_yhei_top_tag_names' );
+
+	// カテゴリーページ設定
+	register_setting( 'category-settings-group', 'jin_yhei_show_only_one_category_ids' );
 }
 function jin_child_settings_page() {
 ?>
   <div class="wrap">
-    <h2>トップに表示するカテゴリーやタグ</h2>
+    <h2>トップページ設定</h2>
     <form method="post" action="options.php">
       <?php 
         settings_fields( 'top-category-settings-group' );
@@ -89,6 +93,34 @@ function jin_child_settings_page() {
 									name="jin_yhei_top_tag_names" 
 									value="<?php echo get_option('jin_yhei_top_tag_names'); ?>"
 									placeholder="おすすめ,まとめ,特集 (タグ名をカンマ区切りで入力)"
+								>
+							</td>
+          </tr>
+        </tbody>
+      </table>
+      <?php submit_button(); ?>
+    </form>
+  </div>
+	<div class="wrap">
+    <h2>カテゴリーページ表示設定</h2>
+    <form method="post" action="options.php">
+      <?php 
+        settings_fields( 'category-settings-group' );
+        do_settings_sections( 'category-settings-group' );
+      ?>
+      <table class="form-table">
+        <tbody>
+          <tr>
+            <th scope="row">
+              <label for="jin_yhei_show_only_one_category_ids">直近の子カテゴリーの一覧を表示するカテゴリーID(ex. 催事別カテゴリーページ)</label>
+            </th>
+              <td>
+								<input type="text" 
+									id="jin_yhei_show_only_one_category_ids" 
+									class="regular-text" 
+									name="jin_yhei_show_only_one_category_ids" 
+									value="<?php echo get_option('jin_yhei_show_only_one_category_ids'); ?>"
+									placeholder="2,8,10,12 (カテゴリーIDをカンマ区切りで入力)"
 								>
 							</td>
           </tr>
@@ -165,5 +197,63 @@ function get_registered_tag_names() {
 	$registered_tag_names = explode(",", $registered_tag_names);
 	return $registered_tag_names;
 }
+
+/**
+ * 直近の子カテゴリーのみを表示するカテゴリーページのIDを取得する
+ * @return array
+ */
+function get_show_only_one_category_ids() {
+	$category_ids = get_option('jin_yhei_show_only_one_category_ids');
+	if( !$category_ids ) {
+		return [];
+	}
+	// 空白除去
+	$category_ids  = preg_replace("/( |　)/", "", $category_ids );
+	$category_ids = explode(",", $category_ids);
+	return $category_ids;
+}
+
+/**
+ * 設定したカテゴリーの直近の子カテゴリーが取得できること
+ */
+function getChildCategorys($category_id){
+	$child_categorys = get_terms( 'category', array(
+		'parent' => $category_id,
+		'hide_empty' => false,
+		'orderby' => 'term_order',
+	));
+	return $child_categorys;
+}
+
+/**
+ * アーカイブページで 現在のカテゴリーを取得する
+ */
+function get_current_term(){
+	$id;
+	$tax_slug;
+
+	if(is_category()){
+			$tax_slug = "category";
+			$id = get_query_var('cat'); 
+	}else if(is_tag()){
+			$tax_slug = "post_tag";
+			$id = get_query_var('tag_id');  
+	}else if(is_tax()){
+			$tax_slug = get_query_var('taxonomy');  
+			$term_slug = get_query_var('term'); 
+			$term = get_term_by("slug",$term_slug,$tax_slug);
+			$id = $term->term_id;
+	}
+	return get_term($id,$tax_slug);
+}
+
+function is_category_list_page() {
+	// 特定のカテゴリーページの場合、直近の子カテゴリーのみ一覧表示する
+	$category_list_ids = get_show_only_one_category_ids();
+	//現在表示されているカテゴリーを取得
+	$current_term = get_current_term();
+	return !empty($category_list_ids) && in_array((string)$current_term->term_id, $category_list_ids, true);
+}
+
 
 ?>
