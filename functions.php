@@ -53,6 +53,9 @@ function register_jin_child_settings() {
 	// トップページ設定
 	register_setting( 'top-category-settings-group', 'jin_yhei_top_categories' );
 	register_setting( 'top-category-settings-group', 'jin_yhei_top_tag_names' );
+	// トップに表示する他ブログの新着RSS設定
+	register_setting( 'top-category-settings-group', 'jin_yhei_target_rss_url_titles' );
+	register_setting( 'top-category-settings-group', 'jin_yhei_target_rss_urls' );
 
 	// カテゴリーページ設定
 	register_setting( 'category-settings-group', 'jin_yhei_show_only_one_category_ids' );
@@ -95,6 +98,32 @@ function jin_child_settings_page() {
 									placeholder="おすすめ,まとめ,特集 (タグ名をカンマ区切りで入力)"
 								>
 							</td>
+          </tr>
+					<tr>
+            <th scope="row">
+              <label for="jin_yhei_target_rss_url_titles">トップに新着表示したい他ブログのタイトル</label>
+            </th>
+						<td>
+							<textarea
+								id="jin_yhei_target_rss_url_titles" 
+								class="regular-text" 
+								name="jin_yhei_target_rss_url_titles" 
+								placeholder="タイトルを改行区切りで入力"
+								rows="4"
+							><?php echo get_option('jin_yhei_target_rss_url_titles'); ?></textarea>
+						</td>
+						<th scope="row">
+              <label for="jin_yhei_target_rss_urls">トップに新着表示したい他ブログのURL</label>
+            </th>
+						<td>
+							<textarea
+								id="jin_yhei_target_rss_urls" 
+								class="regular-text" 
+								name="jin_yhei_target_rss_urls" 
+								placeholder="URLを改行区切りで入力"
+								rows="4"
+							><?php echo get_option('jin_yhei_target_rss_urls'); ?></textarea>
+						</td>
           </tr>
         </tbody>
       </table>
@@ -254,6 +283,79 @@ function is_category_list_page() {
 	$current_term = get_current_term();
 	return !empty($category_list_ids) && in_array((string)$current_term->term_id, $category_list_ids, true);
 }
+
+function get_target_rss_urls() {
+	$rss_urls = get_option('jin_yhei_target_rss_urls');
+	if( !$rss_urls ) {
+		return [];
+	}
+	// 空白除去
+	$rss_urls  = preg_replace("/( |　)/", "", $rss_urls );
+	$rss_urls = explode("\n", $rss_urls); // 改行区切り
+	foreach($rss_urls as $key => $rss_url) {
+		// 空白の行はskipすること
+		if( !$rss_url ) {
+			unset($rss_urls[$key]);
+		}
+	}
+	return $rss_urls;
+}
+
+function get_target_rss_titles() {
+	$rss_titles = get_option('jin_yhei_target_rss_url_titles');
+	if( !$rss_titles ) {
+		return [];
+	}
+	// 空白除去
+	$rss_titles  = preg_replace("/( |　)/", "", $rss_titles );
+	$rss_titles = explode("\n", $rss_titles); // 改行区切り
+	foreach($rss_titles as $key => $rss_title) {
+		// 空白の行はskipすること
+		if( !$rss_title ) {
+			unset($rss_titles[$key]);
+		}
+	}
+	return $rss_titles;
+}
+
+function get_another_rss($url) {
+	$rss = fetch_feed($url);
+	$rss_items = [];
+	$maxitems = 0;
+	if ( ! is_wp_error( $rss ) ) { // ちゃんとフィードが生成されているかをチェックします。
+			// すべてのフィードから最新を出力します。
+			$maxitems = $rss->get_item_quantity( get_option('posts_per_page') ); 
+			// 0件から始めて指定した件数までの配列を生成します。
+			$rss_items = $rss->get_items( 0, $maxitems );
+	}
+	return $rss_items;
+}
+
+/**
+ * rss の item から アイキャッチ画像のURLを取得する
+ * @param SimplePie $rss_item
+ * @see http://simplepie.org/wiki/reference/start#simplepie_item
+ */
+function get_eyecatch_url_from_rss($rss_item) {
+	$first_img_url = '';
+	if ( preg_match( '/<img.+?src=[\'"]([^\'"]+?)[\'"].*?>/msi', $rss_item->get_content(), $matches ) ) {
+			$first_img_url = $matches[1];
+	}
+	return $first_img_url;
+}
+
+/**
+ * RSSにアイキャッチ画像を挿入する
+ */
+function rss_post_thumbnail($content) {
+	global $post;
+	if(has_post_thumbnail($post->ID)) {
+		$content = '<p>' . get_the_post_thumbnail($post->ID) . '</p>' . $content;
+	}
+	return $content;
+}
+add_filter('the_excerpt_rss', 'rss_post_thumbnail');
+add_filter('the_content_feed', 'rss_post_thumbnail');
 
 
 ?>
