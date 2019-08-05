@@ -36,9 +36,35 @@ function getFeaturedCategorysChilds($term_id) {
 	$featured_child_categorys = get_terms( 'category', array(
 		'parent' => $term_id,
 		'hide_empty' => false,
+		'hierarchical' => false,
 		'orderby' => 'term_order',
 	));
-	return $featured_child_categorys;
+
+	return sortCategorys( $featured_child_categorys );
+}
+
+/**
+ * カテゴリーリストを優先度でソートする
+ * @param object[] $target_categorys
+ * @return object[] $categorys_sorted_by_priority
+ */
+function sortCategorys( $target_categorys ) {
+	$categorys = [];
+	$sorted_ids_to_priority = [];
+	foreach( $target_categorys as $target_category ) {
+		$categorys[$target_category->term_id]
+			= $target_category;
+		$sorted_ids_to_priority[$target_category->term_id] = get_category_priority($target_category->term_id);
+	}
+	// Priorityを使って降順でソート
+	arsort($sorted_ids_to_priority);
+	
+	// Priorityでソートした結果を返す
+	$categorys_sorted_by_priority = [];
+	foreach( $sorted_ids_to_priority as $sorted_id => $priority ) {
+		$categorys_sorted_by_priority[] = $categorys[$sorted_id];
+	}
+	return $categorys_sorted_by_priority;
 }
 
 /**
@@ -249,9 +275,10 @@ function getChildCategorys($category_id){
 	$child_categorys = get_terms( 'category', array(
 		'parent' => $category_id,
 		'hide_empty' => false,
+		'hierarchical' => false,
 		'orderby' => 'term_order',
 	));
-	return $child_categorys;
+	return sortCategorys( $child_categorys );
 }
 
 /**
@@ -357,5 +384,48 @@ function rss_post_thumbnail($content) {
 add_filter('the_excerpt_rss', 'rss_post_thumbnail');
 add_filter('the_content_feed', 'rss_post_thumbnail');
 
+/**
+ * 対象のカテゴリーの優先度を取得
+ * @param int $term_id カテゴリーID
+ * @return int $priority
+ */
+function get_category_priority($term_id) {
+	$priority = get_term_meta( $term_id, 'jin_yhei_category_priority', true );
+	if( !$priority ) {
+		$priority = 0;
+	}
+	return $priority;
+}
+
+/**
+ * カテゴリー編集画面にカテゴリ優先度欄を追加
+ * */
+add_action ( 'category_add_form_fields', 'jin_yhei_category_priority' );
+add_action ( 'edit_category_form_fields', 'jin_yhei_category_priority');
+function jin_yhei_category_priority( $tag ) {
+		$term_id = $tag->term_id;
+		$priority = get_category_priority($term_id);
+?>
+<tr class="form-field">
+    <th><label for="jin_yhei_category_priority">表示優先度(大きい順に表示)</label></th>
+    <td><input type="text" name="Cat_meta[jin_yhei_category_priority]" id="extra_text" value=<?php echo $priority ?> /></td>
+</tr>
+<?php
+}
+/**
+ * カテゴリー編集画面のカテゴリータイトル保存処理
+ * */
+add_action ( 'edited_term', 'save_jin_yhei_category_priority');
+function save_jin_yhei_category_priority( $term_id ) {
+  if ( isset( $_POST['Cat_meta'] ) ) {
+     $t_id = $term_id;
+     $cat_keys = array_keys($_POST['Cat_meta']);
+        foreach ($cat_keys as $key){
+        if (isset($_POST['Cat_meta'][$key])){
+           update_term_meta($t_id, $key, $_POST['Cat_meta'][$key]);
+        }
+     }
+  }
+}
 
 ?>
