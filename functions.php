@@ -40,7 +40,7 @@ function getFeaturedCategorysChilds($term_id) {
 		'orderby' => 'term_order',
 	));
 
-	return sortCategorys( $featured_child_categorys );
+	return sortCategorysByPriority( $featured_child_categorys );
 }
 
 /**
@@ -48,7 +48,7 @@ function getFeaturedCategorysChilds($term_id) {
  * @param object[] $target_categorys
  * @return object[] $categorys_sorted_by_priority
  */
-function sortCategorys( $target_categorys ) {
+function sortCategorysByPriority( $target_categorys ) {
 	$categorys = [];
 	$sorted_ids_to_priority = [];
 	foreach( $target_categorys as $target_category ) {
@@ -278,7 +278,7 @@ function getChildCategorys($category_id){
 		'hierarchical' => false,
 		'orderby' => 'term_order',
 	));
-	return sortCategorys( $child_categorys );
+	return sortCategorysByPriority( $child_categorys );
 }
 
 /**
