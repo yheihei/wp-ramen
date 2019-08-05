@@ -413,7 +413,7 @@ function jin_yhei_category_priority( $tag ) {
 <?php
 }
 /**
- * カテゴリー編集画面のカテゴリータイトル保存処理
+ * カテゴリー編集画面のカテゴリー優先度保存処理
  * */
 add_action ( 'edited_term', 'save_jin_yhei_category_priority');
 function save_jin_yhei_category_priority( $term_id ) {
