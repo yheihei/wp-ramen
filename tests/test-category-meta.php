@@ -43,8 +43,8 @@ class カテゴリーページの優先度設定 extends WP_UnitTestCase {
 	/**
 	 * @test
 	 */
-	public function カテゴリーの優先度が未設定の場合0が返ってくる() {
-		$this->assertEquals( 0, get_category_priority( $this->_category_id_priority_none ) );
+	public function カテゴリーの優先度が未設定の場合デフォルト値が返ってくる() {
+		$this->assertEquals( JIN_YHEI_CATEGORY_PRIORITY_VALUE_DEFAULT, get_category_priority( $this->_category_id_priority_none ) );
 	}
 
 	/**
@@ -80,7 +80,7 @@ class カテゴリーページの優先度設定 extends WP_UnitTestCase {
 		foreach( $categorys as $category ) {
 			$sorted_categorys[] = $category;
 		}
-		$this->assertEquals( 0, get_category_priority( $sorted_categorys[3]->term_id ) );
+		$this->assertEquals( JIN_YHEI_CATEGORY_PRIORITY_VALUE_DEFAULT, get_category_priority( $sorted_categorys[3]->term_id ) );
 	}
 
 	/**

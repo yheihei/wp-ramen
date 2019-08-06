@@ -5,6 +5,7 @@ function theme_enqueue_styles() {
 	wp_enqueue_style( 'parent-style', get_template_directory_uri() . '/style.css' );
 } 
 
+define("JIN_YHEI_CATEGORY_PRIORITY_VALUE_DEFAULT", 1);
 
 /**
  * トップページに表示する親カテゴリーを取得する
@@ -392,7 +393,7 @@ add_filter('the_content_feed', 'rss_post_thumbnail');
 function get_category_priority($term_id) {
 	$priority = get_term_meta( $term_id, 'jin_yhei_category_priority', true );
 	if( !$priority ) {
-		$priority = 0;
+		$priority = JIN_YHEI_CATEGORY_PRIORITY_VALUE_DEFAULT;
 	}
 	return $priority;
 }
