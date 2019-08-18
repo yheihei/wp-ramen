@@ -392,7 +392,7 @@ add_filter('the_content_feed', 'rss_post_thumbnail');
  */
 function get_category_priority($term_id) {
 	$priority = get_term_meta( $term_id, 'jin_yhei_category_priority', true );
-	if( is_null($priority) || $priority === '' || !ctype_digit($priority) ) {
+	if( !$priority ) {
 		$priority = JIN_YHEI_CATEGORY_PRIORITY_VALUE_DEFAULT;
 	}
 	return $priority;
