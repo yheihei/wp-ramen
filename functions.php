@@ -83,6 +83,8 @@ function register_jin_child_settings() {
 	// トップに表示する他ブログの新着RSS設定
 	register_setting( 'top-category-settings-group', 'jin_yhei_target_rss_url_titles' );
 	register_setting( 'top-category-settings-group', 'jin_yhei_target_rss_urls' );
+	// トップに最新記事を表示
+	register_setting( 'top-category-settings-group', 'jin_yhei_top_new_entry_enable' );
 
 	// カテゴリーページ設定
 	register_setting( 'category-settings-group', 'jin_yhei_show_only_one_category_ids' );
@@ -151,6 +153,18 @@ function jin_child_settings_page() {
 								rows="4"
 							><?php echo get_option('jin_yhei_target_rss_urls'); ?></textarea>
 						</td>
+          </tr>
+					<tr>
+            <th scope="row">
+              <label for="jin_yhei_top_new_entry_enable">トップページに最新記事リンクを設置</label>
+            </th>
+              <td>
+								<input type="checkbox"
+									id="jin_yhei_top_new_entry_enable"
+									name="jin_yhei_top_new_entry_enable"
+									<?php checked(get_option('jin_yhei_top_new_entry_enable'), 1); ?>
+									value="1">
+							</td>
           </tr>
         </tbody>
       </table>
@@ -427,6 +441,21 @@ function save_jin_yhei_category_priority( $term_id ) {
         }
      }
   }
+}
+
+/**
+ * トップページに最新記事リンクを出すかどうか
+ */
+function is_enable_new_entry_show() {
+	return get_option('jin_yhei_top_new_entry_enable');
+}
+
+/**
+ * トップの最新記事2つを取得
+ * @return WP_Query
+ */
+function get_recent_posts() {
+	return new WP_Query( ['posts_per_page' => 2] );
 }
 
 ?>
