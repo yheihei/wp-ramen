@@ -1,3 +1,17 @@
+<?php
+// タブの上に最新記事2記事分へのリンクを設置
+if ( is_enable_new_entry_show() ) :
+	$the_query = get_recent_posts();
+?>
+	<div class="toppost-list-box-simple">
+		<div class="post-list-mag">
+	<?php while ($the_query->have_posts()) : $the_query->the_post(); ?>
+		<?php get_template_part('include/liststyle/parts/post-list-mag-parts'); ?>
+	<?php endwhile; ?>
+		</div>
+	</div>
+<?php endif; // タブの上に最新記事2記事分へのリンクを設置?>
+
 <?php if( ! get_theme_mod('toppost_list_cat') ) :?>
 <div class="toppost-list-box-simple">
 	<div class="post-list-mag">
