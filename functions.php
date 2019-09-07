@@ -452,8 +452,8 @@ function get_category_priority($term_id) {
 add_action ( 'category_add_form_fields', 'jin_yhei_category_priority' );
 add_action ( 'edit_category_form_fields', 'jin_yhei_category_priority');
 function jin_yhei_category_priority( $tag ) {
-    $term_id = $tag->term_id;
-    $priority = get_category_priority($term_id);
+  $term_id = isset($tag->term_id) ? $tag->term_id : 0;
+  $priority = get_category_priority($term_id);
 ?>
 <tr class="form-field">
     <th><label for="jin_yhei_category_priority">表示優先度(大きい順に表示)</label></th>
