@@ -67,16 +67,24 @@ if ( is_enable_new_entry_show() ) :
     <?php else:
       // トップページに指定のカテゴリー一覧を表示する 場合
       ?>
-    <?php foreach($featured_categorys as $index => $featured_category) :
-      $global_tab_index_count = $index+1;
+      <?php if( is_involved_new_entry_in_category_tabs() ) {
+        // タブに新着を表示する場合
+        ?>
+        <li><label for="tab-1">最新記事</label></li>
+      <?php
+        $global_tab_index_count = 1;
+      } ?>
+    <?php foreach($featured_categorys as $featured_category) :
+        $global_tab_index_count += 1;
       ?>
-      <li><label for="tab-<?= $index+1 ?>"><?= $featured_category->name ?></label></li>
+      <li><label for="tab-<?= $global_tab_index_count ?>"><?= $featured_category->name ?></label></li>
     <?php endforeach; ?>
     <?php // メインブログにラーメン、カレーブログの新着を表示する
       $other_blog_titles = get_target_rss_titles();
-      foreach($other_blog_titles as $index => $other_blog_title) :
+      foreach($other_blog_titles as $other_blog_title) :
+        $global_tab_index_count += 1;
     ?>
-      <li><label for="tab-<?= $global_tab_index_count+$index+1 ?>"><?= $other_blog_title ?></label></li>
+      <li><label for="tab-<?= $global_tab_index_count ?>"><?= $other_blog_title ?></label></li>
       <?php endforeach; ?>
   <?php endif; ?>
   </ul>
@@ -105,6 +113,31 @@ if ( is_enable_new_entry_show() ) :
 
       </div>
     <?php else: ?>
+      <?php if( is_involved_new_entry_in_category_tabs() ) {
+        // タブの中に新着表示を含む場合
+        ?>
+        <div class="post-list-mag autoheight">
+          
+          <?php
+            $ad_infeed_pc_num = get_option('ad_infeed_pc_num');
+            $ad_infeed_sp_num = get_option('ad_infeed_sp_num');
+          ?>
+          <?php if( isset($ad_infeed_pc_num) || isset($ad_infeed_sp_num) ) :?>
+            <?php get_template_part('include/liststyle/parts/post-list-mag-parts-infeed'); ?>
+          <?php else: ?>
+            <?php while (have_posts()) : the_post(); ?>
+            <?php get_template_part('include/liststyle/parts/post-list-mag-parts'); ?>
+            <?php endwhile; ?>
+          <?php endif; ?>
+          
+          <section class="pager-top">
+            <?php if( function_exists('responsive_pagination') ) { responsive_pagination( $wp_query->max_num_pages ); } ?>
+          </section>
+        </div>
+      <?php 
+      }
+      ?>
+
       <?php // トップページに指定のカテゴリー一覧を表示する 場合
       foreach($featured_categorys as $featured_category) : ?>
         <div class="post-list-mag autoheight">

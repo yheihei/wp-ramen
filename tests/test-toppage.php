@@ -79,4 +79,12 @@ class トップページに指定のカテゴリー一覧を表示する extends
     ] );
     $this->assertTrue(cps_has_post_thumbnail($categorys[0]->term_id));
   }
+
+  /**
+   * @test
+   */
+  public function タブの中に新着表示を含む場合設定値をtrueで返す() {
+    update_option('jin_yhei_top_categories_is_involved_new_entry', true);
+    $this->assertTrue( is_involved_new_entry_in_category_tabs() );
+  }
 }

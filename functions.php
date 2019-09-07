@@ -69,6 +69,13 @@ function sortCategorysByPriority( $target_categorys ) {
 }
 
 /**
+ * タブの中に新着表示を含む場合設定値をtrueで返す
+ */
+function is_involved_new_entry_in_category_tabs() {
+  return boolval( get_option('jin_yhei_top_categories_is_involved_new_entry') );
+}
+
+/**
  * トップに表示するカテゴリーやタグの設定
  */
 add_action('admin_menu', 'top_category_menu');
@@ -80,11 +87,13 @@ function register_jin_child_settings() {
   // トップページ設定
   register_setting( 'top-category-settings-group', 'jin_yhei_top_categories' );
   register_setting( 'top-category-settings-group', 'jin_yhei_top_tag_names' );
+  // トップのタブに新着記事を含める
+  register_setting( 'top-category-settings-group', 'jin_yhei_top_categories_is_involved_new_entry' );
   // トップに表示する他ブログの新着RSS設定
   register_setting( 'top-category-settings-group', 'jin_yhei_target_rss_url_titles' );
   register_setting( 'top-category-settings-group', 'jin_yhei_target_rss_urls' );
   // トップに最新記事を表示
-  register_setting( 'top-category-settings-group', 'jin_yhei_top_new_entry_enable' );
+  register_setting( 'top-settings-group', 'jin_yhei_top_new_entry_enable' );
 
   // カテゴリーページ設定
   register_setting( 'category-settings-group', 'jin_yhei_show_only_one_category_ids' );
@@ -93,6 +102,7 @@ function jin_child_settings_page() {
 ?>
   <div class="wrap">
     <h2>トップページ設定</h2>
+    <h3>タブ設定</h3>
     <form method="post" action="options.php">
       <?php 
         settings_fields( 'top-category-settings-group' );
@@ -102,7 +112,7 @@ function jin_child_settings_page() {
         <tbody>
           <tr>
             <th scope="row">
-              <label for="jin_yhei_top_categories">トップに表示したいカテゴリーID</label>
+              <label for="jin_yhei_top_categories">タブに表示したいカテゴリーID</label>
             </th>
               <td>
                 <input type="text" 
@@ -112,6 +122,18 @@ function jin_child_settings_page() {
                   value="<?php echo get_option('jin_yhei_top_categories'); ?>"
                   placeholder="2,8,10,12 (カテゴリーIDをカンマ区切りで入力)"
                 >
+              </td>
+          </tr>
+          <tr>
+            <th scope="row">
+              <label for="jin_yhei_top_categories_is_involved_new_entry">タブに新着記事を含める</label>
+            </th>
+              <td>
+                <input type="checkbox"
+                  id="jin_yhei_top_categories_is_involved_new_entry"
+                  name="jin_yhei_top_categories_is_involved_new_entry"
+                  <?php checked(get_option('jin_yhei_top_categories_is_involved_new_entry'), 1); ?>
+                  value="1">
               </td>
           </tr>
           <tr>
@@ -154,9 +176,21 @@ function jin_child_settings_page() {
               ><?php echo get_option('jin_yhei_target_rss_urls'); ?></textarea>
             </td>
           </tr>
+        </tbody>
+      </table>
+      <?php submit_button(); ?>
+    </form>
+    <h3>その他</h3>
+    <form method="post" action="options.php">
+      <?php 
+        settings_fields( 'top-settings-group' );
+        do_settings_sections( 'top-settings-group' );
+      ?>
+      <table class="form-table">
+        <tbody>
           <tr>
             <th scope="row">
-              <label for="jin_yhei_top_new_entry_enable">トップページに最新記事リンクを設置</label>
+              <label for="jin_yhei_top_new_entry_enable">トップページの上部に最新記事リンクを設置</label>
             </th>
               <td>
                 <input type="checkbox"
