@@ -39,4 +39,12 @@ class トップページのタブの上に最新記事2記事分へのリンク�
     $the_query = get_recent_posts();
     $this->assertEquals(2, $the_query->post_count);
   }
+
+  /**
+   * @test
+   */
+  public function 最新の記事一覧のセクションのタイトルを取得する() {
+    update_option('jin_yhei_top_new_entry_section_title', 'タイトル');
+    $this->assertEquals('タイトル', get_recent_posts_section_title());
+  }
 }

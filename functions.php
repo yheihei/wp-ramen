@@ -94,6 +94,7 @@ function register_jin_child_settings() {
   register_setting( 'top-category-settings-group', 'jin_yhei_target_rss_urls' );
   // トップに最新記事を表示
   register_setting( 'top-settings-group', 'jin_yhei_top_new_entry_enable' );
+  register_setting( 'top-settings-group', 'jin_yhei_top_new_entry_section_title' );
 
   // カテゴリーページ設定
   register_setting( 'category-settings-group', 'jin_yhei_show_only_one_category_ids' );
@@ -192,13 +193,25 @@ function jin_child_settings_page() {
             <th scope="row">
               <label for="jin_yhei_top_new_entry_enable">トップページの上部に最新記事リンクを設置</label>
             </th>
-              <td>
-                <input type="checkbox"
-                  id="jin_yhei_top_new_entry_enable"
-                  name="jin_yhei_top_new_entry_enable"
-                  <?php checked(get_option('jin_yhei_top_new_entry_enable'), 1); ?>
-                  value="1">
-              </td>
+            <td>
+              <input type="checkbox"
+                id="jin_yhei_top_new_entry_enable"
+                name="jin_yhei_top_new_entry_enable"
+                <?php checked(get_option('jin_yhei_top_new_entry_enable'), 1); ?>
+                value="1">
+            </td>
+            <th scope="row">
+              <label for="jin_yhei_top_new_entry_section_title">最新記事リンクのセクションタイトル</label>
+            </th>
+            <td>
+            <input type="text" 
+              id="jin_yhei_top_new_entry_section_title" 
+              class="regular-text" 
+              name="jin_yhei_top_new_entry_section_title" 
+              value="<?php echo get_option('jin_yhei_top_new_entry_section_title'); ?>"
+              placeholder="最新の記事一覧"
+            >
+            </td>
           </tr>
         </tbody>
       </table>
@@ -490,6 +503,13 @@ function is_enable_new_entry_show() {
  */
 function get_recent_posts() {
   return new WP_Query( ['posts_per_page' => 2] );
+}
+
+/**
+ * 最新の記事一覧のセクションのタイトルを取得する
+ */
+function get_recent_posts_section_title() {
+  return get_option('jin_yhei_top_new_entry_section_title');
 }
 
 ?>
