@@ -3,7 +3,16 @@
 if ( is_enable_new_entry_show() ) :
   $the_query = get_recent_posts();
 ?>
-  <div class="toppost-list-box-simple">
+  <div class="toppost-list-box-simple cps-post" style="margin-bottom:2rem;">
+    <?php if ( get_recent_posts_section_title() ){
+      // タイトル設定があれば表示
+      ?>
+    <div class="cps-post-header">
+      <h2 class="cps-post-title entry-title" style="margin-bottom:1rem;"><?php echo get_recent_posts_section_title(); ?></h2>
+    </div>
+    <?php
+    }
+    ?>
     <div class="post-list-mag">
   <?php while ($the_query->have_posts()) : $the_query->the_post(); ?>
     <?php get_template_part('include/liststyle/parts/post-list-mag-parts'); ?>
