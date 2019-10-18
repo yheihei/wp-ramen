@@ -8,7 +8,7 @@ if ( is_enable_new_entry_show() ) :
       // タイトル設定があれば表示
       ?>
     <div class="cps-post-header">
-      <h2 class="cps-post-title entry-title" style="margin-bottom:1rem;"><?php echo get_recent_posts_section_title(); ?></h2>
+      <h2 class="cps-post-title entry-title" style="margin-bottom:1rem; font-size:1.2rem;"><?php echo get_recent_posts_section_title(); ?></h2>
     </div>
     <?php
     }
