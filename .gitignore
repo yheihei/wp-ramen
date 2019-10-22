@@ -3,3 +3,4 @@
 /.travis.yml
 /phpunit.xml.dist
 /bin/install-wp-tests.sh
+.sass-cache/*

@@ -13,7 +13,7 @@ foreach( $child_categorys as $child_category ) : ?>
   $cat_url = get_category_link($cat_id);
 ?>
 <article class="post-list-item">
-  <a class="post-list-link" rel="bookmark" href="<?php echo $cat_url; ?>" itemprop='mainEntityOfPage'>
+  <a class="post-list-link visit-count" rel="bookmark" href="<?php echo $cat_url; ?>" itemprop='mainEntityOfPage'>
     <div class="post-list-inner">
       <div class="post-list-thumb" itemprop="image" itemscope itemtype="https://schema.org/ImageObject">
         <?php if ( ! is_mobile() ): ?>
@@ -63,7 +63,14 @@ foreach( $child_categorys as $child_category ) : ?>
 
         <span class="writer fn" itemprop="author" itemscope itemtype="http://schema.org/Person"><span itemprop="name"><?php the_author(); ?></span></span>
 
-        <h2 class="post-list-title entry-title" itemprop="headline"><?php echo $cat_name; ?></h2>
+        <h2 class="post-list-title entry-title visit-count" itemprop="headline"><?php echo $cat_name; ?></h2>
+        <?php 
+        if( !is_excluded_count_category($cat_id) ) :
+          // 記事数表示
+          $category_post_count = getPostCountsByTermId($cat_id);
+        ?>
+        <span class="visit-count"><?php echo sprintf(get_category_posts_count_format(), $category_post_count); ?></span>
+        <?php endif; ?>
       </div>
     </div>
   </a>

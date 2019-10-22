@@ -6,6 +6,7 @@ function theme_enqueue_styles() {
 } 
 
 define("JIN_YHEI_CATEGORY_PRIORITY_VALUE_DEFAULT", 1);
+define('JIN_YHEI_CATEGORY_POSTS_COUNT_FORMAT', '訪問 %s 回');
 
 /**
  * トップページに表示する親カテゴリーを取得する
@@ -98,6 +99,8 @@ function register_jin_child_settings() {
 
   // カテゴリーページ設定
   register_setting( 'category-settings-group', 'jin_yhei_show_only_one_category_ids' );
+  register_setting( 'category-settings-group', 'jin_yhei_excluded_count_category_ids' );
+  register_setting( 'category-settings-group', 'jin_yhei_category_posts_count_format' );
 }
 function jin_child_settings_page() {
 ?>
@@ -240,6 +243,32 @@ function jin_child_settings_page() {
                   placeholder="2,8,10,12 (カテゴリーIDをカンマ区切りで入力)"
                 >
               </td>
+          </tr>
+          <tr>
+            <th scope="row">
+              <label for="jin_yhei_excluded_count_category_ids">記事数表記をしないカテゴリーID</label>
+            </th>
+            <td>
+              <input type="text" 
+                id="jin_yhei_excluded_count_category_ids" 
+                class="regular-text" 
+                name="jin_yhei_excluded_count_category_ids" 
+                value="<?php echo get_option('jin_yhei_excluded_count_category_ids'); ?>"
+                placeholder="2,8,10,12 (カテゴリーIDをカンマ区切りで入力)"
+              >
+            </td>
+            <th scope="row">
+              <label for="jin_yhei_category_posts_count_format">記事数表記フォーマット</label>
+            </th>
+            <td>
+              <input type="text" 
+                id="jin_yhei_category_posts_count_format" 
+                class="regular-text" 
+                name="jin_yhei_category_posts_count_format" 
+                value="<?php echo get_option('jin_yhei_category_posts_count_format'); ?>"
+                placeholder="訪問 %s 回"
+              >
+            </td>
           </tr>
         </tbody>
       </table>
@@ -510,6 +539,41 @@ function get_recent_posts() {
  */
 function get_recent_posts_section_title() {
   return get_option('jin_yhei_top_new_entry_section_title');
+}
+
+/**
+ * 指定のカテゴリーを持つ記事数を取得する
+ */
+function getPostCountsByTermId($term_id) {
+  $category = get_category($term_id);
+  return $category->count;
+}
+
+/**
+ * 記事数表示の対象外カテゴリーかどうか
+ */
+function is_excluded_count_category($term_id) {
+  $category_ids_string = get_option('jin_yhei_excluded_count_category_ids');
+  if(!$category_ids_string) {
+    // 未設定なら全てのカテゴリーが記事数表示の対象
+    return false;
+  }
+  $excluded_count_category_ids = explode(',', preg_replace("/( |　)/", "", $category_ids_string ));
+  if( in_array(strval($term_id), $excluded_count_category_ids, true) ) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * 記事数表示のフォーマットを取得する
+ */
+function get_category_posts_count_format() {
+  $format = get_option('jin_yhei_category_posts_count_format', "");
+  if( !$format ) {
+    return JIN_YHEI_CATEGORY_POSTS_COUNT_FORMAT;
+  }
+  return $format;
 }
 
 ?>

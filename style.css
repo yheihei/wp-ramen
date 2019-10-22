@@ -4,3 +4,20 @@ Theme Name: jin-child
 Author: CrossPiece
 Version: 1.00
 */
+.visit-count {
+  display: inline-block;
+  margin-right: .7rem;
+}
+@media (max-width: 767px) {
+  .visit-count {
+    display: block;
+    margin-right: 0;
+    font-size: 12px;
+  }
+}
+
+a.visit-count:hover {
+  color: #686357;
+}
+
+/*# sourceMappingURL=style.css.map */
