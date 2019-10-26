@@ -125,7 +125,7 @@ if ( is_enable_new_entry_show() ) :
       <?php if( is_involved_new_entry_in_category_tabs() ) {
         // タブの中に新着表示を含む場合
         ?>
-        <div class="post-list-mag autoheight">
+        <div class="post-list-mag autoheight first-magazine">
           
           <?php
             $ad_infeed_pc_num = get_option('ad_infeed_pc_num');
@@ -148,8 +148,8 @@ if ( is_enable_new_entry_show() ) :
       ?>
 
       <?php // トップページに指定のカテゴリー一覧を表示する 場合
-      foreach($featured_categorys as $featured_category) : ?>
-        <div class="post-list-mag autoheight">
+      foreach($featured_categorys as $index => $featured_category) : ?>
+        <div class="post-list-mag autoheight <?php if(!is_involved_new_entry_in_category_tabs() && $index === 0 ) echo "first-magazine"; ?>">
             <?php
               $ad_infeed_pc_num = get_option('ad_infeed_pc_num');
               $ad_infeed_sp_num = get_option('ad_infeed_sp_num');
@@ -382,3 +382,16 @@ if ( is_enable_new_entry_show() ) :
 
 </div>
 <?php endif; ?>
+
+<script>
+(function($){
+  // マガジンの1番目の要素の高さを画面読み込み時にセットする
+  $(window).on('load resize',function(){
+    var parentDiv = $('.toppost-list-box-inner');//高さを与える要素
+    if($('.first-magazine').length) {
+      var childrenH = $('.first-magazine').outerHeight();//高さを取得（marginを含めた）
+      parentDiv.css({height:childrenH});//要素の高さを親要素に指定
+    }
+  });
+})(jQuery);
+</script>
