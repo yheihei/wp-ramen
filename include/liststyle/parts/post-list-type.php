@@ -11,6 +11,11 @@ if(is_category_list_page()) :
   <?php if( is_post_list_style() == "magazinestyle" ) : ?>
 
     <div class="post-list-mag">
+      <?php if( is_tag() ) :
+        // タグページの場合 カテゴリータグが存在すればそのカテゴリーリンク一覧を出す
+        ?>
+        <?php get_template_part('include/liststyle/parts/post-list-mag-parts-tag-categorys'); ?>
+      <?php endif; ?>
       <?php while (have_posts()) : the_post(); ?>
       <?php get_template_part('include/liststyle/parts/post-list-mag-parts'); ?>
       <?php endwhile; ?>
