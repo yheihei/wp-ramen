@@ -8,6 +8,11 @@ function theme_enqueue_styles() {
 define("JIN_YHEI_CATEGORY_PRIORITY_VALUE_DEFAULT", 1);
 define('JIN_YHEI_CATEGORY_POSTS_COUNT_FORMAT', '訪問 %s 回');
 
+function my_log($message) {
+  $log_message = sprintf("%s:%s\n", date_i18n('Y-m-d H:i:s'), $message);
+  error_log($log_message);
+}
+
 /**
  * トップページに表示する親カテゴリーを取得する
  */
@@ -504,18 +509,33 @@ function jin_yhei_category_priority( $tag ) {
 <?php
 }
 /**
- * カテゴリー編集画面のカテゴリー優先度保存処理
+ * カテゴリー編集画面の設定保存処理
  * */
-add_action ( 'edited_term', 'save_jin_yhei_category_priority');
-function save_jin_yhei_category_priority( $term_id ) {
+add_action ( 'edited_term', 'save_jin_yhei_category');
+function save_jin_yhei_category( $term_id ) {
   if ( isset( $_POST['Cat_meta'] ) ) {
-     $t_id = $term_id;
      $cat_keys = array_keys($_POST['Cat_meta']);
-        foreach ($cat_keys as $key){
+      foreach ($cat_keys as $key){
         if (isset($_POST['Cat_meta'][$key])){
-           update_term_meta($t_id, $key, $_POST['Cat_meta'][$key]);
+           update_term_meta($term_id, $key, $_POST['Cat_meta'][$key]);
+           extra_save_jin_yhei_category($key, $_POST['Cat_meta'][$key], $term_id);
         }
      }
+  }
+}
+/**
+ * カテゴリー編集画面の設定保存処理時の 追加動作
+ */
+function extra_save_jin_yhei_category( $key, $value, $term_id ) {
+  my_log($key);
+  my_log($value);
+  my_log($term_id);
+  switch( $key ) {
+    case 'jin_yhei_category_tag_names':
+      set_category_tags( $term_id, parse_category_tags_string_to_ids($value) );
+      break;
+    default:
+      break;
   }
 }
 
@@ -574,6 +594,204 @@ function get_category_posts_count_format() {
     return JIN_YHEI_CATEGORY_POSTS_COUNT_FORMAT;
   }
   return $format;
+}
+
+/**
+ * カテゴリーのタグ情報を取得する
+ * @param $term_id タグ情報を取得したいカテゴリーのID
+ * @return $category_tags 指定のカテゴリーに付与されているtagのtermオブジェクトリスト
+ */
+function get_category_tags($term_id) {
+  $category_tags_string = get_term_meta( $term_id, 'jin_yhei_category_tag_ids_string', true );
+  $category_tag_ids = parse_category_tags_string_to_ids( $category_tags_string );
+  $category_tags = [];
+  foreach( $category_tag_ids as $category_tag_id ) {
+    $tag = get_term( $category_tag_id, 'post_tag' );
+    if( $tag ) {
+      if( get_class($tag) === 'WP_Error' ) {
+        // タグがなければskip
+        continue;
+      }
+      $category_tags[] = $tag;
+    }
+  }
+  return $category_tags;
+}
+
+function parse_category_tags_string_to_ids( $category_tags_string ) {
+  $category_tags_string = preg_replace("/( |　)/", "", $category_tags_string ); // 空白除去
+  return explode(",", $category_tags_string);
+}
+
+/**
+ * カテゴリーのタグ情報を取得しstring形式で取得 (ex "タグ1,タグ2,タグ3")
+ * @param $term_id タグ情報を取得したいカテゴリーのID
+ * @return string $category_tag_names_string
+ */
+function get_category_tag_names_string($term_id) {
+  $category_tags = get_category_tags($term_id);
+  if( !$category_tags ) {
+    return '';
+  }
+  $category_tag_names_string = ''; // タグ1, タグ2, タグ3 といった文字列になる
+  foreach( $category_tags as $category_tag ) {
+    $category_tag_names_string .= $category_tag->name . ',';
+  }
+  if ( !$category_tag_names_string ) {
+    return '';
+  }
+  $category_tag_names_string = substr($category_tag_names_string, 0, -1); // 末尾の','を消去
+  return $category_tag_names_string;
+}
+
+/**
+ * カテゴリー編集画面にカテゴリのタグ情報欄を追加
+ * */
+add_action ( 'category_add_form_fields', 'jin_yhei_category_tag_names' );
+add_action ( 'edit_category_form_fields', 'jin_yhei_category_tag_names');
+function jin_yhei_category_tag_names( $tag ) {
+  $term_id = isset($tag->term_id) ? $tag->term_id : 0;
+  $category_tags_string = get_category_tag_names_string( $term_id );
+?>
+<tr class="form-field">
+    <th><label for="jin_yhei_category_tag_names">タグ</label></th>
+    <td>
+      <input type="text" name="Cat_meta[jin_yhei_category_tag_names]" value="<?php echo $category_tags_string ?>" />
+      <p class="description">複数タグつけする場合はカンマで区切ってください<br>(ex. おすすめ,まとめ)</p>
+    </td>
+</tr>
+<?php
+}
+
+/**
+ * 現在のすべてのカテゴリータグの名前を取得する
+ * @return $tags カテゴリーに設定した全てのタグのtermオブジェクトリスト
+ */
+function get_all_category_tags() {
+  $tags = [];
+  // すべてのカテゴリーを取得
+  $categories = get_categories(['hide_empty' => 1]); // 記事のないカテゴリーは取得しない
+  foreach ( $categories as $category ) {
+    // 各カテゴリーのタグを取得
+    $category_tag_names = get_category_tags( $category->term_taxonomy_id );
+    foreach( $category_tag_names as $category_tag_name ) {
+      if( in_array( $category_tag_name, $tags, true ) ) {
+        // すでに取得していればskip
+        continue;
+      }
+      $tags[] = $category_tag_name;
+    }
+  }
+  return $tags;
+}
+
+/**
+ * カテゴリーのタグを作成
+ * @param $term_id どのカテゴリーにタグをつけるか
+ * @param $category_tag_names つけるタグの名前(,区切り)
+ * @return int[] $created_term_ids
+ */
+function set_category_tags( $term_id, $category_tag_names ) {
+  $created_term_ids = [];
+  foreach ( $category_tag_names as $category_tag_name ) {
+    $results = wp_insert_term(
+      $category_tag_name,
+      'post_tag'
+    );
+    if( !is_array($results) && get_class($results) === 'WP_Error' ) {
+      // タグがすでに作成済みだった時
+      $created_term_ids[] = $results->error_data['term_exists'];
+      continue;
+    }
+    if( isset($results['term_id']) ) {
+      $created_term_ids[] = $results['term_id'];
+    }
+  }
+
+  // term_metaの更新
+  $created_term_ids_string = ''; // タグのID1, タグのID2, タグのID3 といった文字列になる
+  foreach( $created_term_ids as $created_term_id ) {
+    $created_term_ids_string .= strval($created_term_id) . ',';
+  }
+  if ( $created_term_ids_string ) {
+    $created_term_ids_string = substr($created_term_ids_string, 0, -1); // 末尾の','を消去
+    update_term_meta( 
+      $term_id, 
+      'jin_yhei_category_tag_ids_string',
+      $created_term_ids_string 
+    );
+  }
+  return $created_term_ids;
+}
+
+/**
+ * 指定のタグを付与されたカテゴリー一覧を取得
+ * @param $tag_term_id タグのterm_id
+ * @return $target_categorys 指定のタグを付与されたカテゴリー一覧
+ */
+function get_categorys_by_tag( $tag_term_id ) {
+  $target_categorys = [];
+  // すべてのカテゴリーを取得
+  $categories = get_categories(['hide_empty' => 1]); // 記事のないカテゴリーは取得しない
+  foreach ( $categories as $category ) {
+    // 各カテゴリーのタグを取得
+    $category_tags = (array) get_category_tags( $category->term_taxonomy_id );
+    if( !$category_tags ) {
+      // タグの付与がないカテゴリーは判定スキップ
+      continue;
+    }
+    foreach( $category_tags as $category_tag ) {
+      if( $category_tag->term_id === $tag_term_id ) {
+        // 指定のタグがカテゴリーについていれば追加
+        $target_categorys[] = $category;
+      }
+    }
+  }
+  return sortCategorysByPriority( $target_categorys );
+}
+
+/**
+ * タグクラウドにカテゴリータグを含める
+ */
+function custom_tag_cloud_sort($tags, $args) {
+  // 既存の投稿に紐つく タグID を取得
+  $existing_tag_ids = [];
+  foreach( $tags as $key => $tag ) {
+    $existing_tag_ids[] = $tag->term_id;
+    
+    $category_tag_count = get_count_category_with_tag( $tag->term_id );
+    if( $category_tag_count ) {
+      // カテゴリータグがある場合、記事数を加算
+      $tags[$key]->count = $tags[$key]->count + $category_tag_count;
+    }
+  }
+
+  // カテゴリータグを追加 or 既存タグの件数を追加
+  $category_tags = get_all_category_tags();
+  foreach ( $category_tags as $category_tag ) {
+    if( in_array( $category_tag->term_id, $existing_tag_ids, true ) ) {
+      // 既存のタグがある場合は スキップ
+      continue;
+    }
+    $category_tag->link = get_tag_link($category_tag->term_id);
+    $category_tag->id = $category_tag->term_id;
+    $category_tag->count = get_count_category_with_tag( $category_tag->term_id );
+    $tags[] = $category_tag;
+    $existing_tag_ids[] = $category_tag->term_id;
+  }
+
+  // 記事数(カテゴリー数含む)順でソート
+  asort( $tags, '_wp_object_count_sort_cb' );
+  return $tags;
+}
+add_filter('tag_cloud_sort', 'custom_tag_cloud_sort', 10, 2);
+
+/**
+ * タグが紐つけられているカテゴリーの数を返却する
+ * @param $tag_id
+ */
+function get_count_category_with_tag( $tag_id ) {
+  return count( get_categorys_by_tag( $tag_id ) );
 }
 
 ?>

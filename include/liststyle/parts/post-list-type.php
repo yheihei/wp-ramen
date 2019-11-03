@@ -1,4 +1,12 @@
 <div class="toppost-list-box-simple">
+<?php if( is_tag() ) :
+  // タグページの場合 カテゴリータグが存在すればそのカテゴリーリンク一覧を出す
+  ?>
+  <div class="post-list-mag">
+    <?php get_template_part('include/liststyle/parts/post-list-mag-parts-tag-categorys'); ?>
+  </div>
+
+<?php endif; ?>
 
 <?php 
 if(is_category_list_page()) : 
