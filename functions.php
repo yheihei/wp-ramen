@@ -653,7 +653,7 @@ function jin_yhei_category_tag_names( $tag ) {
 <tr class="form-field">
     <th><label for="jin_yhei_category_tag_names">タグ</label></th>
     <td>
-      <input type="text" name="Cat_meta[jin_yhei_category_tag_names]" value="<?php echo $category_tags_string ?>" />
+      <input type="text" name="Cat_meta[jin_yhei_category_tag_names]" value="<?php echo $category_tags_string ?>" placeholder="おすすめ,まとめ" />
       <p class="description">複数のタグをつける場合はカンマで区切ってください<br>(ex. おすすめ,まとめ,ワンコイン)</p>
     </td>
 </tr>
@@ -695,6 +695,8 @@ function set_category_tags( $term_id, $category_tag_names ) {
       // タグの名前が空の時 skip
       continue;
     }
+
+    // post_tag を作成する
     $results = wp_insert_term(
       $category_tag_name,
       'post_tag'
@@ -710,12 +712,13 @@ function set_category_tags( $term_id, $category_tag_names ) {
   }
 
   // term_metaの更新
-  $created_term_ids_string = ''; // タグのID1, タグのID2, タグのID3 といった文字列になる
+  $created_term_ids_string = ''; // 'タグのID1,タグのID2,タグのID3' といった文字列になる
   foreach( $created_term_ids as $created_term_id ) {
     $created_term_ids_string .= strval($created_term_id) . ',';
   }
   if ( $created_term_ids_string ) {
     $created_term_ids_string = substr($created_term_ids_string, 0, -1); // 末尾の','を消去
+    // 作成した post_tag をカテゴリーと紐つける
     update_term_meta( 
       $term_id, 
       'jin_yhei_category_tag_ids_string',
@@ -752,7 +755,10 @@ function get_categorys_by_tag( $tag_term_id ) {
 }
 
 /**
- * タグクラウドにカテゴリータグを含める
+ * タグクラウドにカテゴリータグを含めて返却する
+ * @param $tags タグクラウドに表示する tag の termリスト
+ * @param $args タグクラウド表示時のソート条件など
+ * @return $tags タグカテゴリーを含んだ tag の termリスト
  */
 function custom_tag_cloud_sort($tags, $args) {
   // 既存の投稿に紐つく タグID を取得

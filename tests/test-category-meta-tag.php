@@ -40,16 +40,7 @@ class カテゴリーにタグを設置する extends WP_UnitTestCase {
   /**
    * @test
    */
-  public function カテゴリーのタグ情報を取得できる() {
-    // カテゴリーに単一タグを設定
-    $term_ids = set_category_tags( $this->_category_id, [self::TAG_1] );
-    $this->assertEquals( $term_ids[0], get_category_tags( $this->_category_id )[0]->term_id );
-  }
-
-  /**
-   * @test
-   */
-  public function カテゴリーのタグ情報を複数取得できる() {
+  public function カテゴリーのタグ情報をセットし、セットした値を取得できる() {
     // カテゴリーに複数タグを設定
     $term_ids = set_category_tags( $this->_category_id, [self::TAG_1, self::TAG_2] );
     $this->assertEquals( $term_ids[1], get_category_tags( $this->_category_id )[1]->term_id );
@@ -58,7 +49,7 @@ class カテゴリーにタグを設置する extends WP_UnitTestCase {
   /**
    * @test
    */
-  public function カテゴリーのタグ情報を複数取得しstring形式で取得できる() {
+  public function カテゴリーのタグ情報を複数取得しカンマ区切りのstring形式で取得できる() {
     // カテゴリーに複数タグを設定
     $term_ids = set_category_tags( $this->_category_id, [self::TAG_1, self::TAG_2] );
     $this->assertEquals( self::TAG_1 . "," . self::TAG_2, get_category_tag_names_string( $this->_category_id ) );
@@ -67,8 +58,8 @@ class カテゴリーにタグを設置する extends WP_UnitTestCase {
   /**
    * @test
    */
-  public function 不正なカテゴリータグを設定した場合カテゴリーのタグ情報が空になること() {
-    // カテゴリーに不正なタグ情報を付与
+  public function 空のカテゴリータグを設定した場合カテゴリータグがセットされないこと() {
+    // カテゴリーに空のタグ情報を付与
     $term_ids = set_category_tags( $this->_category_id, ['',''] );
     $this->assertEquals( 0, count(get_category_tags( $this->_category_id )) );
   }
