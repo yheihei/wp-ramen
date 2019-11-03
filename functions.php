@@ -781,7 +781,8 @@ function custom_tag_cloud_sort($tags, $args) {
   }
 
   // 記事数(カテゴリー数含む)順でソート
-  asort( $tags, '_wp_object_count_sort_cb' );
+  uasort( $tags, '_wp_object_count_sort_cb' ); // 逆順でソート(_wp_object_count_sort_cb はWordPress関数)
+  $tags = array_reverse( $tags, true ); // 逆順を逆にして降順ソートにする
   return $tags;
 }
 add_filter('tag_cloud_sort', 'custom_tag_cloud_sort', 10, 2);
