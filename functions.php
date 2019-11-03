@@ -527,9 +527,6 @@ function save_jin_yhei_category( $term_id ) {
  * カテゴリー編集画面の設定保存処理時の 追加動作
  */
 function extra_save_jin_yhei_category( $key, $value, $term_id ) {
-  my_log($key);
-  my_log($value);
-  my_log($term_id);
   switch( $key ) {
     case 'jin_yhei_category_tag_names':
       set_category_tags( $term_id, parse_category_tags_string_to_ids($value) );
@@ -657,7 +654,7 @@ function jin_yhei_category_tag_names( $tag ) {
     <th><label for="jin_yhei_category_tag_names">タグ</label></th>
     <td>
       <input type="text" name="Cat_meta[jin_yhei_category_tag_names]" value="<?php echo $category_tags_string ?>" />
-      <p class="description">複数タグつけする場合はカンマで区切ってください<br>(ex. おすすめ,まとめ)</p>
+      <p class="description">複数のタグをつける場合はカンマで区切ってください<br>(ex. おすすめ,まとめ,ワンコイン)</p>
     </td>
 </tr>
 <?php
@@ -694,6 +691,10 @@ function get_all_category_tags() {
 function set_category_tags( $term_id, $category_tag_names ) {
   $created_term_ids = [];
   foreach ( $category_tag_names as $category_tag_name ) {
+    if( !$category_tag_name ) {
+      // タグの名前が空の時 skip
+      continue;
+    }
     $results = wp_insert_term(
       $category_tag_name,
       'post_tag'

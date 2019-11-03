@@ -67,6 +67,15 @@ class カテゴリーにタグを設置する extends WP_UnitTestCase {
   /**
    * @test
    */
+  public function 不正なカテゴリータグを設定した場合カテゴリーのタグ情報が空になること() {
+    // カテゴリーに不正なタグ情報を付与
+    $term_ids = set_category_tags( $this->_category_id, ['',''] );
+    $this->assertEquals( 0, count(get_category_tags( $this->_category_id )) );
+  }
+
+  /**
+   * @test
+   */
   public function 現在のすべてのカテゴリータグを取得する() {
     set_category_tags( $this->_category_id, [self::TAG_1, self::TAG_2] );
     set_category_tags( $this->_category_id_2, [self::TAG_2, self::TAG_3] );
