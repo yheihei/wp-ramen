@@ -386,7 +386,7 @@ if ( is_enable_new_entry_show() ) :
 <script>
 (function($){
   // マガジンの1番目の要素の高さを画面読み込み時にセットする
-  $(window).on('load resize',function(){
+  $(window).on('load',function(){
     var parentDiv = $('.toppost-list-box-inner');//高さを与える要素
     if($('.first-magazine').length) {
       var childrenH = $('.first-magazine').outerHeight();//高さを取得（marginを含めた）
