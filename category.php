@@ -38,7 +38,7 @@
 				
 				<?php if( is_bread_display() == "exist") :?>
 				<?php if( is_mobile() ): ?>
-				<?php breadcrumbs(); ?>
+				<?php get_template_part('include/breadcrumb'); ?>
 				<?php endif; ?>
 				<?php endif; ?>
 			</main>
@@ -99,7 +99,7 @@
 				
 				<?php if( is_bread_display() == "exist") :?>
 				<?php if( is_mobile() ): ?>
-				<?php breadcrumbs(); ?>
+				<?php get_template_part('include/breadcrumb'); ?>
 				<?php endif; ?>
 				<?php endif; ?>
 			</main>
@@ -118,7 +118,7 @@
 				
 				<?php if( is_bread_display() == "exist") :?>
 				<?php if( is_mobile() ): ?>
-				<?php breadcrumbs(); ?>
+				<?php get_template_part('include/breadcrumb'); ?>
 				<?php endif; ?>
 				<?php endif; ?>
 			</main>
