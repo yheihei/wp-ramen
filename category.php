@@ -38,7 +38,7 @@
 				
 				<?php if( is_bread_display() == "exist") :?>
 				<?php if( is_mobile() ): ?>
-				<?php get_template_part('include/breadcrumb'); ?>
+				<?php breadcrumbs(); ?>
 				<?php endif; ?>
 				<?php endif; ?>
 			</main>
