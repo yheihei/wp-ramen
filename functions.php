@@ -473,7 +473,7 @@ function get_eyecatch_url_from_rss($rss_item) {
 function rss_post_thumbnail($content) {
   global $post;
   if(has_post_thumbnail($post->ID)) {
-    $content = '<p>' . get_the_post_thumbnail($post->ID) . '</p>' . $content;
+    $content = '<p>' . get_the_post_thumbnail( $post->ID, 'large' ) . '</p>' . $content;
   }
   return $content;
 }
